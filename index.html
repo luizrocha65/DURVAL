@@ -13,10 +13,10 @@
       padding: 40px;
     }
 
-    /* Logo */
+    /* Logo da escola */
     .logo {
-      width: 120px;
-      height: auto;
+      width: 20cm;   /* largura 20cm */
+      height: 3cm;   /* altura 3cm */
       margin-bottom: 15px;
       border-radius: 10px;
       box-shadow: 0 0 5px rgba(0,0,0,0.2);
@@ -256,3 +256,37 @@
         alert("Preencha todos os campos!");
         return;
       }
+
+      if (novaSenha !== confirma) {
+        alert("As senhas não coincidem!");
+        return;
+      }
+
+      const alunos = JSON.parse(localStorage.getItem("alunos"));
+      const aluno = alunos.find(a => a.nome === alunoLogado.nome);
+
+      if (senhaAtual !== aluno.senha && senhaAtual.toLowerCase() !== aluno.nome.toLowerCase()) {
+        alert("Senha atual incorreta!");
+        return;
+      }
+
+      aluno.senha = novaSenha;
+      localStorage.setItem("alunos", JSON.stringify(alunos));
+      alert("Senha alterada com sucesso!");
+      document.getElementById("senhaAtual").value = "";
+      document.getElementById("novaSenhaAluno").value = "";
+      document.getElementById("confirmaSenhaAluno").value = "";
+    }
+
+    // ================= SAIR =================
+    function logout() {
+      document.getElementById("telaLogin").classList.remove("hidden");
+      document.getElementById("painelProfessor").classList.add("hidden");
+      document.getElementById("painelAluno").classList.add("hidden");
+      document.getElementById("usuario").value = "";
+      document.getElementById("senha").value = "";
+      alunoLogado = null;
+    }
+  </script>
+</body>
+</html>
