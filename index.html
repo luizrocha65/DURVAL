@@ -12,6 +12,17 @@
       align-items: center;
       padding: 40px;
     }
+
+    /* Logo */
+    .logo {
+      width: 120px;
+      height: auto;
+      margin-bottom: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.2);
+      display: block;
+    }
+
     h1 { color: #333; }
 
     .hidden { display: none; }
@@ -60,9 +71,12 @@
   </style>
 </head>
 <body>
+  <!-- Logo da escola -->
+  <img src="logo.png" alt="Logo da Escola" class="logo">
+
   <h1>Sistema de Pontuações</h1>
 
-  <!-- Tela inicial -->
+  <!-- Tela de login -->
   <div id="telaLogin">
     <h2>Login</h2>
     <select id="tipoUsuario">
@@ -115,9 +129,7 @@
   </div>
 
   <script>
-    // ========================
-    // "Banco" inicial
-    // ========================
+    // Banco de dados simulado
     if (!localStorage.getItem("alunos")) {
       const alunosIniciais = [
         { nome: "Ana Maria", senha: "Ana Maria", pontuacao: 85 },
@@ -129,9 +141,7 @@
     const professor = { usuario: "prof", senha: "1234" };
     let alunoLogado = null;
 
-    // ========================
-    // LOGIN
-    // ========================
+    // ================= LOGIN =================
     function login() {
       const tipo = document.getElementById("tipoUsuario").value;
       const usuario = document.getElementById("usuario").value.trim();
@@ -159,9 +169,7 @@
       }
     }
 
-    // ========================
-    // PROFESSOR
-    // ========================
+    // ================= PROFESSOR =================
     function mostrarPainelProfessor() {
       document.getElementById("telaLogin").classList.add("hidden");
       document.getElementById("painelProfessor").classList.remove("hidden");
@@ -231,9 +239,7 @@
       document.getElementById("novaPontuacao").value = aluno.pontuacao;
     }
 
-    // ========================
-    // ALUNO
-    // ========================
+    // ================= ALUNO =================
     function mostrarPainelAluno(aluno) {
       document.getElementById("telaLogin").classList.add("hidden");
       document.getElementById("painelAluno").classList.remove("hidden");
@@ -250,39 +256,3 @@
         alert("Preencha todos os campos!");
         return;
       }
-
-      if (novaSenha !== confirma) {
-        alert("As senhas não coincidem!");
-        return;
-      }
-
-      const alunos = JSON.parse(localStorage.getItem("alunos"));
-      const aluno = alunos.find(a => a.nome === alunoLogado.nome);
-
-      if (senhaAtual !== aluno.senha && senhaAtual.toLowerCase() !== aluno.nome.toLowerCase()) {
-        alert("Senha atual incorreta!");
-        return;
-      }
-
-      aluno.senha = novaSenha;
-      localStorage.setItem("alunos", JSON.stringify(alunos));
-      alert("Senha alterada com sucesso!");
-      document.getElementById("senhaAtual").value = "";
-      document.getElementById("novaSenhaAluno").value = "";
-      document.getElementById("confirmaSenhaAluno").value = "";
-    }
-
-    // ========================
-    // SAIR
-    // ========================
-    function logout() {
-      document.getElementById("telaLogin").classList.remove("hidden");
-      document.getElementById("painelProfessor").classList.add("hidden");
-      document.getElementById("painelAluno").classList.add("hidden");
-      document.getElementById("usuario").value = "";
-      document.getElementById("senha").value = "";
-      alunoLogado = null;
-    }
-  </script>
-</body>
-</html>
