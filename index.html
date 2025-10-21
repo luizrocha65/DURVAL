@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -13,10 +14,9 @@
       padding: 40px;
     }
 
-    /* Logo da escola */
     .logo {
-      width: 20cm;   /* largura 20cm */
-      height: 3cm;   /* altura 3cm */
+      width: 20cm;  
+      height: 3cm;  
       margin-bottom: 15px;
       border-radius: 10px;
       box-shadow: 0 0 5px rgba(0,0,0,0.2);
@@ -24,56 +24,18 @@
     }
 
     h1 { color: #333; }
-
     .hidden { display: none; }
-
-    input, button, select {
-      margin: 6px;
-      padding: 8px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-
-    button {
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
+    input, button, select { margin: 6px; padding: 8px; border-radius: 5px; border: 1px solid #ccc; }
+    button { background-color: #4CAF50; color: white; border: none; cursor: pointer; }
     button:hover { background-color: #45a049; }
-
-    table {
-      border-collapse: collapse;
-      width: 90%;
-      margin-top: 20px;
-      background-color: white;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 10px;
-      text-align: center;
-    }
-    th {
-      background-color: #4CAF50;
-      color: white;
-    }
-
-    #alterarSenhaBox {
-      background-color: #ffffff;
-      border: 1px solid #ccc;
-      padding: 20px;
-      border-radius: 10px;
-      width: 280px;
-      margin-top: 20px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
-    }
+    table { border-collapse: collapse; width: 90%; margin-top: 20px; background-color: white; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+    th { background-color: #4CAF50; color: white; }
+    #alterarSenhaBox { background-color: #ffffff; border: 1px solid #ccc; padding: 20px; border-radius: 10px; width: 280px; margin-top: 20px; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
   </style>
 </head>
 <body>
-  <!-- Logo da escola -->
   <img src="logo.png" alt="Logo da Escola" class="logo">
-
   <h1>Sistema de Pontuações</h1>
 
   <!-- Tela de login -->
@@ -92,6 +54,11 @@
   <div id="painelProfessor" class="hidden">
     <h2>Painel do Professor 👨‍🏫</h2>
     <button onclick="logout()">Sair</button><br><br>
+
+    <!-- Importar CSV -->
+    <h3>Importar alunos via Excel/CSV</h3>
+    <input type="file" id="csvFile" accept=".csv">
+    <button onclick="importarCSV()">Importar CSV</button><br><br>
 
     <h3>Cadastrar / Atualizar Aluno</h3>
     <input type="text" id="novoNome" placeholder="Nome completo do aluno">
@@ -156,8 +123,6 @@
       } else {
         const alunos = JSON.parse(localStorage.getItem("alunos"));
         const aluno = alunos.find(a => a.nome.toLowerCase() === usuario.toLowerCase() && a.senha === senha);
-
-        // Permitir senha igual ao nome completo
         const alunoSenhaIgualNome = alunos.find(a => a.nome.toLowerCase() === usuario.toLowerCase() && senha.toLowerCase() === a.nome.toLowerCase());
 
         if (aluno || alunoSenhaIgualNome) {
@@ -276,6 +241,45 @@
       document.getElementById("senhaAtual").value = "";
       document.getElementById("novaSenhaAluno").value = "";
       document.getElementById("confirmaSenhaAluno").value = "";
+    }
+
+    // ================= IMPORTAR CSV =================
+    function importarCSV() {
+      const fileInput = document.getElementById("csvFile");
+      const file = fileInput.files[0];
+      if (!file) {
+        alert("Selecione um arquivo CSV primeiro!");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const text = e.target.result;
+        const linhas = text.split(/\r?\n/);
+        let alunos = JSON.parse(localStorage.getItem("alunos"));
+
+        linhas.forEach((linha, index) => {
+          if (linha.trim() === "" || index === 0) return; // pular cabeçalho
+          const partes = linha.split(",");
+          const nome = partes[0].trim();
+          const senha = partes[1]?.trim() || nome;
+          const pontuacao = parseInt(partes[2]?.trim()) || 0;
+
+          const existente = alunos.find(a => a.nome.toLowerCase() === nome.toLowerCase());
+          if (existente) {
+            existente.senha = senha;
+            existente.pontuacao = pontuacao;
+          } else {
+            alunos.push({ nome, senha, pontuacao });
+          }
+        });
+
+        localStorage.setItem("alunos", JSON.stringify(alunos));
+        atualizarTabela();
+        alert("Importação concluída com sucesso!");
+        fileInput.value = "";
+      };
+      reader.readAsText(file);
     }
 
     // ================= SAIR =================
