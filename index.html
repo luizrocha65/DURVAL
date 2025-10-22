@@ -1,582 +1,240 @@
 
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Sistema de Pontuação – Professor e Alunos</title>
+  <meta charset="UTF-8">
+  <title>Sistema de Pontuações</title>
   <style>
-    :root{
-      --bg: #0b1020; /* fundo escuro azulado */
-      --card: #121833;
-      --card-2: #0f152a;
-      --muted: #a6b0d0;
-      --text: #e8ecff;
-      --brand: #7c9cff;
-      --brand-2: #99b2ff;
-      --ok: #48c774;
-      --warn: #ffb020;
-      --danger: #ff6b6b;
-      --shadow: rgba(0,0,0,.3);
-      --radius: 14px;
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f7f9fb;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px;
     }
 
-    *{ box-sizing: border-box; }
-    html, body{ height: 100%; }
-    body{
-      margin: 0; background: radial-gradient(1200px 600px at 10% -10%, #19204366, transparent),
-      radial-gradient(1000px 800px at 110% 10%, #142a5666, transparent), var(--bg);
-      color: var(--text);
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    .logo {
+      width: 20cm;
+      height: 3cm;
+      margin-bottom: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.2);
+      display: block;
     }
 
-    header{ max-width: 1100px; margin: 24px auto; padding: 0 16px; }
-    h1{ font-size: 28px; margin: 0 0 6px; }
-    .sub{ color: var(--muted); font-size: 14px; }
-
-    .wrap{ max-width: 1100px; margin: 12px auto 40px; padding: 0 16px; }
-
-    .tabs{ display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-    .tab-btn{
-      background: linear-gradient(180deg, #1a244a, #131b37);
-      border: 1px solid #2a3771;
-      box-shadow: 0 10px 20px var(--shadow), inset 0 1px 0 #2b3b7d;
-      color: var(--text);
-      border-radius: 999px;
-      padding: 10px 16px;
-      cursor: pointer; font-weight: 600; letter-spacing:.2px;
-      transition: transform .06s ease, background .2s ease, border-color .2s ease;
-    }
-    .tab-btn[aria-selected="true"]{ background: linear-gradient(180deg, #243165, #1a244a); border-color: #3b56b0; }
-    .tab-btn:active{ transform: translateY(1px); }
-
-    .grid{ display: grid; grid-template-columns: 1.1fr .9fr; gap: 16px; }
-    @media (max-width: 980px){ .grid{ grid-template-columns: 1fr; } }
-
-    .card{ background: linear-gradient(180deg, var(--card), var(--card-2)); border: 1px solid #243060; border-radius: var(--radius); box-shadow: 0 20px 40px var(--shadow); }
-    .card h2{ font-size: 18px; margin: 0 0 14px; }
-    .section{ padding: 16px; border-bottom: 1px solid #223162; }
-    .section:last-child{ border-bottom: 0; }
-
-    .row{ display:flex; gap:10px; flex-wrap: wrap; align-items: center; }
-    .row > *{ flex: none; }
-
-    input[type="text"], input[type="number"], select{
-      background: #0d1533; color: var(--text); border: 1px solid #273265; outline: none;
-      padding: 10px 12px; border-radius: 10px; min-width: 180px;
-    }
-    input[type="number"]{ width: 100px; text-align: center; }
-
-    .btn{
-      background: linear-gradient(180deg, #2a3a7a, #1a2754);
-      border: 1px solid #3850b3;
-      color: var(--text);
-      padding: 10px 14px; border-radius: 10px; cursor: pointer; font-weight: 600;
-      box-shadow: 0 8px 18px var(--shadow), inset 0 1px 0 #415cce;
-      transition: transform .06s ease, filter .2s ease, background .2s ease;
-    }
-    .btn:active{ transform: translateY(1px); }
-    .btn.ghost{ background: #0f1734; border-color: #273265; box-shadow: inset 0 1px 0 #1c2552; }
-    .btn.ok{ border-color:#3b9f6b; background: linear-gradient(180deg, #3bbd7a, #28945e); }
-    .btn.warn{ border-color:#c0902b; background: linear-gradient(180deg, #ffc14d, #d79a2a); color:#222; }
-    .btn.danger{ border-color:#c94d4d; background: linear-gradient(180deg, #ff7b7b, #cf5454); }
-
-    .table-wrap{ overflow: auto; border-radius: 0 0 var(--radius) var(--radius); }
-    table{ width:100%; border-collapse: collapse; min-width: 720px; }
-    thead th{ position: sticky; top: 0; z-index: 1; background: #161e3f; color: var(--muted); font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .6px; }
-    th, td{ padding: 12px 10px; border-bottom: 1px solid #1e2a57; text-align: center; }
-    tbody tr:hover{ background: #101735; }
-
-    .score-editor{ display:flex; gap: 6px; align-items: center; justify-content:center; }
-    .chip{ display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; border:1px solid #273265; background:#0f1734; color:var(--muted); font-size:12px; }
-
-    .muted{ color: var(--muted); }
-    .hint{ font-size: 12px; color: var(--muted); }
-
-    .stack{ display:flex; gap:8px; flex-wrap: wrap; }
-    .spacer{ flex:1; }
-    .right{ text-align:right; }
-
-    .hidden{ display:none; }
+    h1 { color: #333; }
+    .hidden { display: none; }
+    input, button, select { margin: 6px; padding: 8px; border-radius: 5px; border: 1px solid #ccc; }
+    button { background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+    button:hover { background-color: #45a049; }
+    table { border-collapse: collapse; width: 90%; margin-top: 20px; background-color: white; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+    th { background-color: #4CAF50; color: white; }
+    #alterarSenhaBox { background-color: #ffffff; border: 1px solid #ccc; padding: 20px; border-radius: 10px; width: 280px; margin-top: 20px; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Placar da Turma</h1>
-    <div class="sub">Gerencie alunos e pontuações (Professor) e visualize sua pontuação (Aluno). Tudo salvo no navegador (localStorage).</div>
-  </header>
+  <img src="logo.png" alt="Logo da Escola" class="logo">
+  <h1>Sistema de Pontuações</h1>
 
-  <div class="wrap">
-    <div class="tabs" role="tablist" aria-label="Alternar visões">
-      <button id="tab-prof" class="tab-btn" role="tab" aria-selected="true" aria-controls="painel-prof" onclick="ativarAba('prof')">Painel do Professor</button>
-      <button id="tab-aluno" class="tab-btn" role="tab" aria-selected="false" aria-controls="painel-aluno" onclick="ativarAba('aluno')">Painel do Aluno</button>
+  <!-- Tela de login -->
+  <div id="telaLogin">
+    <h2>Login</h2>
+    <select id="tipoUsuario">
+      <option value="aluno">Aluno</option>
+      <option value="professor">Professor</option>
+    </select><br>
+    <input type="text" id="usuario" placeholder="Usuário (nome ou 'prof')"><br>
+    <input type="password" id="senha" placeholder="Senha"><br>
+    <button onclick="login()">Entrar</button>
+  </div>
+
+  <!-- Painel do professor -->
+  <div id="painelProfessor" class="hidden">
+    <h2>Painel do Professor 👨‍🏫</h2>
+    <button onclick="logout()">Sair</button><br><br>
+
+    <!-- Importar CSV -->
+    <h3>Importar lista de alunos via CSV</h3>
+    <input type="file" id="csvFile" accept=".csv">
+    <button onclick="importarListaAlunos()">Importar Lista</button><br><br>
+
+    <h3>Cadastrar / Atualizar Aluno</h3>
+    <input type="text" id="novoNome" placeholder="Nome completo do aluno">
+    <input type="password" id="novaSenha" placeholder="Senha (opcional)">
+    <input type="number" id="novaPontuacao" placeholder="Pontuação">
+    <button onclick="cadastrarOuAtualizarAluno()">Salvar</button>
+
+    <h3>Lista de alunos</h3>
+    <div style="margin-bottom:10px;">
+      <button onclick="apagarSelecionados()">Apagar selecionados</button>
     </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Selecionar</th>
+          <th>Nome</th>
+          <th>Pontuação</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="tabelaAlunos"></tbody>
+    </table>
+  </div>
 
-    <!-- Painel do Professor -->
-    <section id="painel-prof" role="tabpanel" aria-labelledby="tab-prof">
-      <div class="grid">
-        <div class="card">
-          <div class="section">
-            <h2>Cadastro Rápido</h2>
-            <div class="row">
-              <input id="novoNome" type="text" placeholder="Nome do aluno" />
-              <input id="pontInicial" type="number" value="0" />
-              <button class="btn ok" onclick="adicionarAluno()">Adicionar</button>
-              <button class="btn ghost" onclick="importarLista()">Importar lista</button>
-              <button class="btn ghost" onclick="exportarCSV()">Exportar CSV</button>
-            </div>
-            <div class="hint" style="margin-top:8px">Dica: cole vários nomes (um por linha) em <em>Importar lista</em>.</div>
-          </div>
+  <!-- Painel do aluno -->
+  <div id="painelAluno" class="hidden">
+    <h2>Painel do Aluno 👩‍🎓</h2>
+    <button onclick="logout()">Sair</button><br><br>
+    <p><b>Nome:</b> <span id="alunoNome"></span></p>
+    <p><b>Pontuação:</b> <span id="alunoPontuacao"></span></p>
 
-          <div class="section">
-            <div class="stack">
-              <div class="chip">Total de alunos: <strong id="totalAlunos">0</strong></div>
-              <div class="chip">Selecionados: <strong id="selCount">0</strong></div>
-              <div class="spacer"></div>
-              <button class="btn" onclick="ajustarSelecionados(-1)">-1 selecionados</button>
-              <button class="btn" onclick="ajustarSelecionados(1)">+1 selecionados</button>
-              <button class="btn warn" onclick="aplicarBonus()">Bonus +5 (selecionados)</button>
-              <button class="btn danger" onclick="removerSelecionados()">Remover selecionados</button>
-              <button class="btn ghost" onclick="desfazer()">Desfazer</button>
-            </div>
-          </div>
-
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th style="width:40px"><input type="checkbox" id="toggleTodos" onclick="toggleTodos(this)"></th>
-                  <th class="right" style="text-align:left">Aluno</th>
-                  <th>Pontuação</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody id="tabelaAlunos"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="section">
-            <h2>Ranking</h2>
-            <ol id="ranking" style="padding-left:20px; margin:0;">
-              <!-- preenchido via JS -->
-            </ol>
-          </div>
-          <div class="section">
-            <h2>Backup</h2>
-            <div class="row">
-              <button class="btn ghost" onclick="salvarBackup()">Salvar backup</button>
-              <button class="btn ghost" onclick="carregarBackup()">Carregar backup</button>
-              <input id="arquivoBackup" class="hidden" type="file" accept="application/json" />
-            </div>
-            <div class="hint" style="margin-top:8px">O backup gera/usa um arquivo JSON com todos os alunos e pontos.</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Painel do Aluno -->
-    <section id="painel-aluno" class="hidden" role="tabpanel" aria-labelledby="tab-aluno">
-      <div class="card">
-        <div class="section">
-          <h2>Entrar como Aluno</h2>
-          <div class="row">
-            <select id="selectAluno"></select>
-            <button class="btn ok" onclick="entrarComoAluno()">Entrar</button>
-            <button class="btn ghost" onclick="sairAluno()" id="btnSair" disabled>Sair</button>
-          </div>
-          <div class="hint" style="margin-top:8px">O professor controla os pontos. O painel do aluno só exibe.</div>
-        </div>
-        <div class="section">
-          <div id="viewAluno" class="hidden">
-            <h2 id="alunoNome">—</h2>
-            <p class="muted">Sua pontuação:</p>
-            <div style="font-size:52px; font-weight:800; letter-spacing:1px; margin-top:-6px;" id="alunoPontuacao">0</div>
-          </div>
-          <div id="vazioAluno" class="muted">Nenhum aluno logado.</div>
-        </div>
-      </div>
-    </section>
+    <div id="alterarSenhaBox">
+      <h3>Alterar Senha</h3>
+      <input type="password" id="senhaAtual" placeholder="Senha atual"><br>
+      <input type="password" id="novaSenhaAluno" placeholder="Nova senha"><br>
+      <input type="password" id="confirmaSenhaAluno" placeholder="Confirmar nova senha"><br>
+      <button onclick="alterarSenhaAluno()">Alterar</button>
+    </div>
   </div>
 
   <script>
-    // =====================
-    // Utilidades e Estado
-    // =====================
-    const STORAGE_KEY = 'alunos';
-    const UNDO_STACK = []; // pilha de ações para desfazer
-    let alunoLogado = null; // { nome, pontuacao }
+    if (!localStorage.getItem("alunos")) localStorage.setItem("alunos", JSON.stringify([]));
 
-    function lerAlunos(){
-      const raw = localStorage.getItem(STORAGE_KEY);
-      try { return raw ? JSON.parse(raw) : []; } catch(e){ return []; }
-    }
-    function gravarAlunos(list){
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-      // dispara um evento customizado para sincronizar painéis
-      window.dispatchEvent(new Event('alunos:changed'));
-    }
-    function idSeguro(nome){ return String(nome).trim().replace(/[^\w\-]+/g, '_'); }
+    const professor = { usuario: "prof", senha: "1234" };
+    let alunoLogado = null;
 
-    // =====================
-    // Abas
-    // =====================
-    function ativarAba(qual){
-      const isProf = qual === 'prof';
-      document.getElementById('painel-prof').classList.toggle('hidden', !isProf);
-      document.getElementById('painel-aluno').classList.toggle('hidden', isProf);
-      document.getElementById('tab-prof').setAttribute('aria-selected', isProf);
-      document.getElementById('tab-aluno').setAttribute('aria-selected', !isProf);
-      if(!isProf) preencherSelectAluno();
-    }
-
-    // =====================
-    // Professor – CRUD e Tabela
-    // =====================
-    function atualizarTabela(){
-      const alunos = lerAlunos();
-      const corpo = document.getElementById('tabelaAlunos');
-      corpo.innerHTML = '';
-      alunos.forEach(a => {
-        const sid = idSeguro(a.nome);
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td><input type="checkbox" class="selecionado" data-nome="${a.nome}"></td>
-          <td style="text-align:left">${a.nome}</td>
-          <td>
-            <div class="score-editor">
-              <button class="btn" title="Diminuir 1" onclick="alterarPontuacao('${a.nome.replaceAll("'","\\'")}', -1)">-1</button>
-              <input type="number" id="pont_${sid}" value="${a.pontuacao || 0}" />
-              <button class="btn" title="Aumentar 1" onclick="alterarPontuacao('${a.nome.replaceAll("'","\\'")}', 1)">+1</button>
-            </div>
-          </td>
-          <td>
-            <div class="stack" style="justify-content:center">
-              <button class="btn ok" onclick="salvarPontuacao('${a.nome.replaceAll("'","\\'")}')">Salvar</button>
-              <button class="btn ghost" onclick="editarAluno('${a.nome.replaceAll("'","\\'")}')">Renomear</button>
-              <button class="btn danger" onclick="removerAluno('${a.nome.replaceAll("'","\\'")}')">Excluir</button>
-            </div>
-          </td>`;
-        corpo.appendChild(tr);
-
-        // Enter para salvar rapidamente
-        tr.querySelector(`#pont_${sid}`).addEventListener('keydown', (e)=>{
-          if(e.key === 'Enter') salvarPontuacao(a.nome);
-        });
-      });
-
-      document.getElementById('totalAlunos').textContent = alunos.length;
-      atualizarRanking();
-      contarSelecionados();
-    }
-
-    function adicionarAluno(){
-      const nome = document.getElementById('novoNome').value.trim();
-      const pts = parseInt(document.getElementById('pontInicial').value || '0', 10) || 0;
-      if(!nome) return alert('Informe um nome.');
-      const alunos = lerAlunos();
-      if(alunos.some(a => a.nome.toLowerCase() === nome.toLowerCase())){
-        return alert('Já existe um aluno com esse nome.');
+    function login() {
+      const tipo = document.getElementById("tipoUsuario").value;
+      const usuario = document.getElementById("usuario").value.trim();
+      const senha = document.getElementById("senha").value.trim();
+      if(tipo==="professor"){
+        if(usuario===professor.usuario && senha===professor.senha) mostrarPainelProfessor();
+        else alert("Professor: usuário ou senha incorretos!");
+      } else {
+        const alunos = JSON.parse(localStorage.getItem("alunos"));
+        const aluno = alunos.find(a=>a.nome.toLowerCase()===usuario.toLowerCase() && a.senha===senha);
+        const alunoSenhaIgualNome = alunos.find(a=>a.nome.toLowerCase()===usuario.toLowerCase() && senha.toLowerCase()===a.nome.toLowerCase());
+        if(aluno||alunoSenhaIgualNome){ alunoLogado=aluno||alunoSenhaIgualNome; mostrarPainelAluno(alunoLogado);}
+        else alert("Aluno: usuário ou senha incorretos!");
       }
-      alunos.push({ nome, pontuacao: pts });
-      gravarAlunos(alunos);
-      document.getElementById('novoNome').value='';
-      document.getElementById('pontInicial').value='0';
+    }
+
+    function mostrarPainelProfessor(){
+      document.getElementById("telaLogin").classList.add("hidden");
+      document.getElementById("painelProfessor").classList.remove("hidden");
       atualizarTabela();
+    }
+
+    function cadastrarOuAtualizarAluno(){
+      const nome=document.getElementById("novoNome").value.trim();
+      const senha=document.getElementById("novaSenha").value.trim()||nome;
+      const pontuacao=parseInt(document.getElementById("novaPontuacao").value);
+      if(!nome||isNaN(pontuacao)){alert("Preencha o nome e a pontuação!"); return;}
+      let alunos=JSON.parse(localStorage.getItem("alunos"));
+      const existente=alunos.find(a=>a.nome.toLowerCase()===nome.toLowerCase());
+      if(existente){existente.pontuacao=pontuacao; existente.senha=senha; alert("Aluno atualizado com sucesso!");}
+      else{alunos.push({nome,senha,pontuacao}); alert("Aluno cadastrado com sucesso!");}
+      localStorage.setItem("alunos",JSON.stringify(alunos));
+      atualizarTabela();
+      document.getElementById("novoNome").value="";
+      document.getElementById("novaSenha").value="";
+      document.getElementById("novaPontuacao").value="";
+    }
+
+    function atualizarTabela(){
+      const alunos=JSON.parse(localStorage.getItem("alunos"));
+      const corpo=document.getElementById("tabelaAlunos");
+      corpo.innerHTML="";
+      alunos.forEach(a=>{
+        const linha=document.createElement("tr");
+        linha.innerHTML=`
+          <td><input type="checkbox" class="selecionado" data-nome="${a.nome}"></td>
+          <td>${a.nome}</td>
+          <td>${a.pontuacao}</td>
+          <td><button onclick="editarAluno('${a.nome}')">Editar</button></td>`;
+        corpo.appendChild(linha);
+      });
+    }
+
+    function apagarSelecionados(){
+      const checkboxes=document.querySelectorAll(".selecionado:checked");
+      if(checkboxes.length===0){alert("Selecione pelo menos um aluno!"); return;}
+      if(!confirm("Deseja realmente apagar os alunos selecionados?")) return;
+      let alunos=JSON.parse(localStorage.getItem("alunos"));
+      checkboxes.forEach(cb=>{const nome=cb.getAttribute("data-nome"); alunos=alunos.filter(a=>a.nome!==nome);});
+      localStorage.setItem("alunos",JSON.stringify(alunos));
+      atualizarTabela();
+      alert("Alunos selecionados apagados com sucesso!");
     }
 
     function editarAluno(nome){
-      const novo = prompt('Novo nome para o aluno:', nome);
-      if(!novo) return;
-      const alunos = lerAlunos();
-      const a = alunos.find(x => x.nome === nome);
-      if(!a) return;
-      if(alunos.some(x => x !== a && x.nome.toLowerCase() === novo.toLowerCase())){
-        return alert('Já existe outro aluno com esse nome.');
-      }
-      const prev = { ...a };
-      a.nome = novo.trim();
-      pushUndo({ tipo:'editarNome', antes: prev, depois: { ...a } });
-      gravarAlunos(alunos);
-      atualizarTabela();
-      if(alunoLogado && alunoLogado.nome === nome){ alunoLogado.nome = a.nome; renderAluno(); }
+      const alunos=JSON.parse(localStorage.getItem("alunos"));
+      const aluno=alunos.find(a=>a.nome===nome);
+      document.getElementById("novoNome").value=aluno.nome;
+      document.getElementById("novaSenha").value=aluno.senha;
+      document.getElementById("novaPontuacao").value=aluno.pontuacao;
     }
 
-    function removerAluno(nome){
-      if(!confirm(`Remover ${nome}?`)) return;
-      let alunos = lerAlunos();
-      const idx = alunos.findIndex(a => a.nome === nome);
-      if(idx < 0) return;
-      const removido = alunos[idx];
-      alunos.splice(idx,1);
-      pushUndo({ tipo:'remover', aluno: removido });
-      gravarAlunos(alunos);
-      atualizarTabela();
-      if(alunoLogado && alunoLogado.nome === nome){ sairAluno(); }
+    function mostrarPainelAluno(aluno){
+      document.getElementById("telaLogin").classList.add("hidden");
+      document.getElementById("painelAluno").classList.remove("hidden");
+      document.getElementById("alunoNome").textContent=aluno.nome;
+      document.getElementById("alunoPontuacao").textContent=aluno.pontuacao;
     }
 
-    function removerSelecionados(){
-      const nomes = selecionados();
-      if(!nomes.length) return alert('Selecione pelo menos um.');
-      if(!confirm(`Remover ${nomes.length} aluno(s)?`)) return;
-      let alunos = lerAlunos();
-      const removidos = [];
-      nomes.forEach(n => {
-        const i = alunos.findIndex(a => a.nome === n);
-        if(i>=0){ removidos.push(alunos[i]); alunos.splice(i,1); }
-      });
-      if(removidos.length){ pushUndo({ tipo:'removerLote', alunos: removidos }); }
-      gravarAlunos(alunos);
-      atualizarTabela();
+    function alterarSenhaAluno(){
+      const senhaAtual=document.getElementById("senhaAtual").value.trim();
+      const novaSenha=document.getElementById("novaSenhaAluno").value.trim();
+      const confirma=document.getElementById("confirmaSenhaAluno").value.trim();
+      if(!senhaAtual||!novaSenha||!confirma){alert("Preencha todos os campos!"); return;}
+      if(novaSenha!==confirma){alert("As senhas não coincidem!"); return;}
+      const alunos=JSON.parse(localStorage.getItem("alunos"));
+      const aluno=alunos.find(a=>a.nome===alunoLogado.nome);
+      if(senhaAtual!==aluno.senha && senhaAtual.toLowerCase()!==aluno.nome.toLowerCase()){alert("Senha atual incorreta!"); return;}
+      aluno.senha=novaSenha;
+      localStorage.setItem("alunos",JSON.stringify(alunos));
+      alert("Senha alterada com sucesso!");
+      document.getElementById("senhaAtual").value="";
+      document.getElementById("novaSenhaAluno").value="";
+      document.getElementById("confirmaSenhaAluno").value="";
     }
 
-    function salvarPontuacao(nome){
-      const sid = idSeguro(nome);
-      const campo = document.getElementById(`pont_${sid}`);
-      if(!campo) return;
-      const novo = parseInt(campo.value,10);
-      if(Number.isNaN(novo)) return alert('Informe um número válido.');
-      const alunos = lerAlunos();
-      const a = alunos.find(x => x.nome === nome);
-      if(!a) return;
-      const anterior = a.pontuacao || 0;
-      a.pontuacao = novo;
-      pushUndo({ tipo:'pontuacao', nome, antes: anterior, depois: novo });
-      gravarAlunos(alunos);
-      if(alunoLogado && alunoLogado.nome === nome){ renderAluno(); }
-      atualizarRanking();
-    }
-
-    function alterarPontuacao(nome, delta){
-      const alunos = lerAlunos();
-      const a = alunos.find(x => x.nome === nome);
-      if(!a) return;
-      const anterior = a.pontuacao || 0;
-      a.pontuacao = anterior + delta;
-      pushUndo({ tipo:'pontuacao', nome, antes: anterior, depois: a.pontuacao });
-      gravarAlunos(alunos);
-      const sid = idSeguro(nome);
-      const campo = document.getElementById(`pont_${sid}`);
-      if(campo) campo.value = a.pontuacao;
-      if(alunoLogado && alunoLogado.nome === nome){ renderAluno(); }
-      atualizarRanking();
-    }
-
-    function aplicarBonus(){
-      const nomes = selecionados();
-      if(!nomes.length) return alert('Selecione pelo menos um.');
-      const alunos = lerAlunos();
-      const alterados = [];
-      nomes.forEach(n => {
-        const a = alunos.find(x => x.nome===n);
-        if(a){ alterados.push({ nome:n, antes: a.pontuacao||0 }); a.pontuacao = (a.pontuacao||0) + 5; }
-      });
-      if(alterados.length){ pushUndo({ tipo:'lote', alterados, delta: +5 }); }
-      gravarAlunos(alunos);
-      atualizarTabela();
-    }
-
-    function ajustarSelecionados(delta){
-      const nomes = selecionados();
-      if(!nomes.length) return alert('Selecione pelo menos um.');
-      const alunos = lerAlunos();
-      const alterados = [];
-      nomes.forEach(n => {
-        const a = alunos.find(x => x.nome===n);
-        if(a){ alterados.push({ nome:n, antes: a.pontuacao||0 }); a.pontuacao = (a.pontuacao||0) + delta; }
-      });
-      if(alterados.length){ pushUndo({ tipo:'lote', alterados, delta }); }
-      gravarAlunos(alunos);
-      atualizarTabela();
-    }
-
-    function atualizarRanking(){
-      const alunos = lerAlunos().slice().sort((a,b)=> (b.pontuacao||0) - (a.pontuacao||0));
-      const ol = document.getElementById('ranking');
-      ol.innerHTML = '';
-      alunos.forEach(a => {
-        const li = document.createElement('li');
-        li.textContent = `${a.nome} — ${a.pontuacao||0}`;
-        ol.appendChild(li);
-      });
-    }
-
-    function selecionados(){
-      return Array.from(document.querySelectorAll('.selecionado:checked')).map(x => x.dataset.nome);
-    }
-
-    function toggleTodos(ck){
-      document.querySelectorAll('.selecionado').forEach(x => x.checked = ck.checked);
-      contarSelecionados();
-    }
-    function contarSelecionados(){
-      const n = document.querySelectorAll('.selecionado:checked').length;
-      document.getElementById('selCount').textContent = n;
-    }
-    document.addEventListener('change', (e)=>{
-      if(e.target.classList.contains('selecionado')) contarSelecionados();
-    });
-
-    // =====================
-    // Desfazer (Undo)
-    // =====================
-    function pushUndo(acao){ UNDO_STACK.push({ t: Date.now(), ...acao }); }
-    function desfazer(){
-      const a = UNDO_STACK.pop();
-      if(!a) return alert('Nada para desfazer.');
-      let alunos = lerAlunos();
-      switch(a.tipo){
-        case 'pontuacao':{
-          const x = alunos.find(z => z.nome === a.nome);
-          if(x){ x.pontuacao = a.antes; gravarAlunos(alunos); atualizarTabela(); if(alunoLogado && alunoLogado.nome === a.nome) renderAluno(); }
-          break;
-        }
-        case 'editarNome':{
-          const x = alunos.find(z => z.nome === a.depois.nome);
-          if(x){ x.nome = a.antes.nome; gravarAlunos(alunos); atualizarTabela(); if(alunoLogado && alunoLogado.nome === a.depois.nome){ alunoLogado.nome = a.antes.nome; renderAluno(); } }
-          break;
-        }
-        case 'remover':{
-          alunos.push(a.aluno); gravarAlunos(alunos); atualizarTabela(); break;
-        }
-        case 'removerLote':{
-          alunos.push(...a.alunos); gravarAlunos(alunos); atualizarTabela(); break;
-        }
-        case 'lote':{
-          a.alterados.forEach(ch => {
-            const x = alunos.find(z => z.nome === ch.nome);
-            if(x) x.pontuacao = ch.antes;
-          });
-          gravarAlunos(alunos); atualizarTabela();
-          break;
-        }
-      }
-    }
-
-    // =====================
-    // Importar / Exportar / Backup
-    // =====================
-    function exportarCSV(){
-      const alunos = lerAlunos();
-      let csv = 'nome,pontuacao\n' + alunos.map(a => `${escapeCSV(a.nome)},${a.pontuacao||0}`).join('\n');
-      baixarArquivo(csv, 'text/csv;charset=utf-8;', 'alunos.csv');
-    }
-    function escapeCSV(s){
-      if(/[",\n]/.test(s)) return '"' + s.replace(/"/g,'""') + '"';
-      return s;
-    }
-    function baixarArquivo(conteudo, mime, nome){
-      const blob = new Blob([conteudo], { type: mime });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = nome; a.click(); URL.revokeObjectURL(url);
-    }
-
-    function importarLista(){
-      const texto = prompt('Cole os nomes (um por linha):');
-      if(!texto) return;
-      const novos = texto.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
-      if(!novos.length) return;
-      const alunos = lerAlunos();
-      let adicionados = 0;
-      novos.forEach(n => {
-        if(!alunos.some(a => a.nome.toLowerCase() === n.toLowerCase())){
-          alunos.push({ nome: n, pontuacao: 0 });
-          adicionados++;
-        }
-      });
-      gravarAlunos(alunos); atualizarTabela();
-      alert(`Adicionados: ${adicionados}`);
-    }
-
-    function salvarBackup(){
-      const data = { versao: 1, geradoEm: new Date().toISOString(), alunos: lerAlunos() };
-      baixarArquivo(JSON.stringify(data, null, 2), 'application/json', 'backup_alunos.json');
-    }
-
-    function carregarBackup(){
-      const input = document.getElementById('arquivoBackup');
-      input.onchange = () => {
-        const f = input.files[0];
-        if(!f) return;
-        const rd = new FileReader();
-        rd.onload = () => {
-          try{
-            const json = JSON.parse(rd.result);
-            if(!json || !Array.isArray(json.alunos)) throw new Error('Formato inválido');
-            gravarAlunos(json.alunos);
-            atualizarTabela();
-            alert('Backup restaurado!');
-          }catch(e){ alert('Arquivo de backup inválido.'); }
-          input.value = '';
-        };
-        rd.readAsText(f);
+    function importarListaAlunos(){
+      const fileInput=document.getElementById("csvFile");
+      const file=fileInput.files[0];
+      if(!file){alert("Selecione um arquivo CSV primeiro!"); return;}
+      const reader=new FileReader();
+      reader.onload=function(e){
+        const text=e.target.result;
+        const linhas=text.split(/\r?\n/);
+        let alunos=JSON.parse(localStorage.getItem("alunos"));
+        linhas.forEach((linha,index)=>{
+          if(linha.trim()===""||index===0) return;
+          let separador=linha.includes(";") ? ";" : ",";
+          const partes=linha.replace(/"/g,"").split(separador);
+          const nome=partes[0].trim();
+          if(!nome) return;
+          const existente=alunos.find(a=>a.nome.toLowerCase()===nome.toLowerCase());
+          if(!existente) alunos.push({nome,senha:nome,pontuacao:0});
+        });
+        localStorage.setItem("alunos",JSON.stringify(alunos));
+        atualizarTabela();
+        alert("Lista de alunos importada com sucesso!");
+        fileInput.value="";
       };
-      input.click();
+      reader.readAsText(file);
     }
 
-    // =====================
-    // Painel do Aluno
-    // =====================
-    function preencherSelectAluno(){
-      const sel = document.getElementById('selectAluno');
-      const alunos = lerAlunos().slice().sort((a,b)=> a.nome.localeCompare(b.nome));
-      sel.innerHTML = alunos.map(a => `<option value="${a.nome.replaceAll('"','&quot;')}">${a.nome}</option>`).join('');
+    function logout(){
+      document.getElementById("telaLogin").classList.remove("hidden");
+      document.getElementById("painelProfessor").classList.add("hidden");
+      document.getElementById("painelAluno").classList.add("hidden");
+      document.getElementById("usuario").value="";
+      document.getElementById("senha").value="";
+      alunoLogado=null;
     }
-
-    function entrarComoAluno(){
-      const nome = document.getElementById('selectAluno').value;
-      const alunos = lerAlunos();
-      const a = alunos.find(x => x.nome === nome);
-      if(!a) return alert('Aluno não encontrado.');
-      alunoLogado = { nome: a.nome };
-      renderAluno();
-      document.getElementById('btnSair').disabled = false;
-    }
-
-    function sairAluno(){
-      alunoLogado = null; renderAluno();
-      document.getElementById('btnSair').disabled = true;
-    }
-
-    function renderAluno(){
-      const view = document.getElementById('viewAluno');
-      const vazio = document.getElementById('vazioAluno');
-      if(!alunoLogado){ view.classList.add('hidden'); vazio.classList.remove('hidden'); return; }
-      const alunos = lerAlunos();
-      const a = alunos.find(x => x.nome === alunoLogado.nome);
-      if(!a){ view.classList.add('hidden'); vazio.classList.remove('hidden'); return; }
-      document.getElementById('alunoNome').textContent = a.nome;
-      document.getElementById('alunoPontuacao').textContent = a.pontuacao || 0;
-      view.classList.remove('hidden'); vazio.classList.add('hidden');
-    }
-
-    // =====================
-    // Eventos globais
-    // =====================
-    window.addEventListener('alunos:changed', ()=>{ // sincroniza entre seções
-      atualizarTabela();
-      preencherSelectAluno();
-      if(alunoLogado) renderAluno();
-    });
-
-    window.addEventListener('storage', (e)=>{ // sincroniza entre abas do navegador
-      if(e.key === STORAGE_KEY){ atualizarTabela(); preencherSelectAluno(); if(alunoLogado) renderAluno(); }
-    });
-
-    // Init
-    (function init(){
-      if(!localStorage.getItem(STORAGE_KEY)){
-        const base = [
-          { nome: 'Ana', pontuacao: 3 },
-          { nome: 'Bruno', pontuacao: 1 },
-          { nome: 'Carla', pontuacao: 5 },
-        ];
-        gravarAlunos(base);
-      }
-      atualizarTabela();
-      preencherSelectAluno();
-    })();
   </script>
 </body>
 </html>
