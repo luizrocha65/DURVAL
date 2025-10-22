@@ -1,296 +1,224 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Sistema de Pontuações</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f7f9fb;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 40px;
-    }
-
-    .logo {
-      width: 20cm;  
-      height: 3cm;  
-      margin-bottom: 15px;
-      border-radius: 10px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.2);
-      display: block;
-    }
-
-    h1 { color: #333; }
-    .hidden { display: none; }
-    input, button, select { margin: 6px; padding: 8px; border-radius: 5px; border: 1px solid #ccc; }
-    button { background-color: #4CAF50; color: white; border: none; cursor: pointer; }
-    button:hover { background-color: #45a049; }
-    table { border-collapse: collapse; width: 90%; margin-top: 20px; background-color: white; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-    th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
-    th { background-color: #4CAF50; color: white; }
-    #alterarSenhaBox { background-color: #ffffff; border: 1px solid #ccc; padding: 20px; border-radius: 10px; width: 280px; margin-top: 20px; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
-  </style>
+<meta charset="UTF-8">
+<title>Sistema de Pontuações</title>
+<style>
+body {font-family: Arial, sans-serif;background-color: #f7f9fb;display: flex;flex-direction: column;align-items: center;padding: 40px;}
+.logo {width: 20cm;height: 3cm;margin-bottom: 15px;border-radius: 10px;box-shadow: 0 0 5px rgba(0,0,0,0.2);display: block;}
+h1 { color: #333; }
+.hidden { display: none; }
+input:not([type="checkbox"]):not([type="radio"]),button,select {margin: 6px;padding: 8px;border-radius: 5px;border: 1px solid #ccc;}
+input[type="checkbox"] {appearance: auto;width: 18px;height: 18px;margin: 0;cursor: pointer;}
+button {background-color: #4CAF50;color: white;border: none;cursor: pointer;}
+button:hover {background-color: #45a049;}
+table {border-collapse: collapse;width: 90%;margin-top: 20px;background-color: white;box-shadow: 0 0 10px rgba(0,0,0,0.1);}
+th, td {border: 1px solid #ccc;padding: 10px;text-align: center;}
+th {background-color: #4CAF50;color: white;}
+#alterarSenhaBox {background-color: #ffffff;border: 1px solid #ccc;padding: 20px;border-radius: 10px;width: 280px;margin-top: 20px;box-shadow: 0 0 5px rgba(0,0,0,0.1);}
+.btn-danger { background-color: #d9534f; color: white; }
+.btn-danger:hover { background-color: #c9302c; }
+.actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+</style>
 </head>
 <body>
-  <img src="logo.png" alt="Logo da Escola" class="logo">
-  <h1>Sistema de Pontuações</h1>
+<img src="logo.png" alt="Logo da Escola" class="logo">
+<h1>Sistema de Pontuações</h1>
+<div id="telaLogin">
+  <h2>Login</h2>
+  <select id="tipoUsuario">
+    <option value="aluno">Aluno</option>
+    <option value="professor">Professor</option>
+  </select><br>
+  <input type="text" id="usuario" placeholder="Usuário (nome ou 'prof')"><br>
+  <input type="password" id="senha" placeholder="Senha"><br>
+  <button onclick="login()">Entrar</button>
+</div>
 
-  <!-- Tela de login -->
-  <div id="telaLogin">
-    <h2>Login</h2>
-    <select id="tipoUsuario">
-      <option value="aluno">Aluno</option>
-      <option value="professor">Professor</option>
-    </select><br>
-    <input type="text" id="usuario" placeholder="Usuário (nome ou 'prof')"><br>
-    <input type="password" id="senha" placeholder="Senha"><br>
-    <button onclick="login()">Entrar</button>
+<div id="painelProfessor" class="hidden">
+  <h2>Painel do Professor 👨‍🏫</h2>
+  <button onclick="logout()">Sair</button><br><br>
+
+  <h3>Importar lista de alunos via CSV</h3>
+  <input type="file" id="csvFile" accept=".csv">
+  <button onclick="importarListaAlunos()">Importar Lista</button><br><br>
+
+  <h3>Cadastrar / Atualizar Aluno</h3>
+  <input type="text" id="novoNome" placeholder="Nome completo do aluno">
+  <input type="password" id="novaSenha" placeholder="Senha (opcional)">
+  <input type="number" id="novaPontuacao" placeholder="Pontuação">
+  <button onclick="cadastrarOuAtualizarAluno()">Salvar</button>
+
+  <h3>Lista de alunos</h3>
+  <div class="actions">
+    <button onclick="apagarSelecionados()">Apagar selecionados</button>
+    <button class="btn-danger" onclick="apagarTodos()">Apagar todos</button>
   </div>
 
-  <!-- Painel do professor -->
-  <div id="painelProfessor" class="hidden">
-    <h2>Painel do Professor 👨‍🏫</h2>
-    <button onclick="logout()">Sair</button><br><br>
+  <table>
+    <thead>
+      <tr>
+        <th><input type="checkbox" id="selecionarTodos" title="Selecionar todos" onchange="selecionarTodos(this)"></th>
+        <th>Nome</th>
+        <th>Pontuação</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody id="tabelaAlunos"></tbody>
+  </table>
+</div>
 
-    <!-- Importar CSV -->
-    <h3>Importar alunos via Excel/CSV</h3>
-    <input type="file" id="csvFile" accept=".csv">
-    <button onclick="importarCSV()">Importar CSV</button><br><br>
+<div id="painelAluno" class="hidden">
+  <h2>Painel do Aluno 👩‍🎓</h2>
+  <button onclick="logout()">Sair</button><br><br>
+  <p><b>Nome:</b> <span id="alunoNome"></span></p>
+  <p><b>Pontuação:</b> <span id="alunoPontuacao"></span></p>
 
-    <h3>Cadastrar / Atualizar Aluno</h3>
-    <input type="text" id="novoNome" placeholder="Nome completo do aluno">
-    <input type="password" id="novaSenha" placeholder="Senha (opcional)">
-    <input type="number" id="novaPontuacao" placeholder="Pontuação">
-    <button onclick="cadastrarOuAtualizarAluno()">Salvar</button>
-
-    <h3>Lista de alunos</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>Nome</th>
-          <th>Pontuação</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody id="tabelaAlunos"></tbody>
-    </table>
+  <div id="alterarSenhaBox">
+    <h3>Alterar Senha</h3>
+    <input type="password" id="senhaAtual" placeholder="Senha atual"><br>
+    <input type="password" id="novaSenhaAluno" placeholder="Nova senha"><br>
+    <input type="password" id="confirmaSenhaAluno" placeholder="Confirmar nova senha"><br>
+    <button onclick="alterarSenhaAluno()">Alterar</button>
   </div>
+</div>
 
-  <!-- Painel do aluno -->
-  <div id="painelAluno" class="hidden">
-    <h2>Painel do Aluno 👩‍🎓</h2>
-    <button onclick="logout()">Sair</button><br><br>
-    <p><b>Nome:</b> <span id="alunoNome"></span></p>
-    <p><b>Pontuação:</b> <span id="alunoPontuacao"></span></p>
+<script>
+if (!localStorage.getItem("alunos")) localStorage.setItem("alunos", JSON.stringify([]));
 
-    <div id="alterarSenhaBox">
-      <h3>Alterar Senha</h3>
-      <input type="password" id="senhaAtual" placeholder="Senha atual"><br>
-      <input type="password" id="novaSenhaAluno" placeholder="Nova senha"><br>
-      <input type="password" id="confirmaSenhaAluno" placeholder="Confirmar nova senha"><br>
-      <button onclick="alterarSenhaAluno()">Alterar</button>
-    </div>
-  </div>
+const professor = { usuario: "prof", senha: "1234" };
+let alunoLogado = null;
 
-  <script>
-    // Banco de dados simulado
-    if (!localStorage.getItem("alunos")) {
-      const alunosIniciais = [
-        { nome: "Ana Maria", senha: "Ana Maria", pontuacao: 85 },
-        { nome: "Bruno Silva", senha: "Bruno Silva", pontuacao: 92 }
-      ];
-      localStorage.setItem("alunos", JSON.stringify(alunosIniciais));
-    }
+function login() {
+  const tipo = document.getElementById("tipoUsuario").value;
+  const usuario = document.getElementById("usuario").value.trim();
+  const senha = document.getElementById("senha").value.trim();
+  if (tipo === "professor") {
+    if (usuario === professor.usuario && senha === professor.senha) mostrarPainelProfessor();
+    else alert("Professor: usuário ou senha incorretos!");
+  } else {
+    const alunos = JSON.parse(localStorage.getItem("alunos"));
+    const aluno = alunos.find(a => a.nome.toLowerCase() === usuario.toLowerCase() && a.senha === senha);
+    const alunoSenhaIgualNome = alunos.find(a => a.nome.toLowerCase() === usuario.toLowerCase() && senha.toLowerCase() === a.nome.toLowerCase());
+    if (aluno || alunoSenhaIgualNome) { alunoLogado = aluno || alunoSenhaIgualNome; mostrarPainelAluno(alunoLogado); }
+    else alert("Aluno: usuário ou senha incorretos!");
+  }
+}
 
-    const professor = { usuario: "prof", senha: "1234" };
-    let alunoLogado = null;
+function mostrarPainelProfessor() {
+  document.getElementById("telaLogin").classList.add("hidden");
+  document.getElementById("painelProfessor").classList.remove("hidden");
+  atualizarTabela();
+}
 
-    // ================= LOGIN =================
-    function login() {
-      const tipo = document.getElementById("tipoUsuario").value;
-      const usuario = document.getElementById("usuario").value.trim();
-      const senha = document.getElementById("senha").value.trim();
+function cadastrarOuAtualizarAluno() {
+  const nome = document.getElementById("novoNome").value.trim();
+  const senha = document.getElementById("novaSenha").value.trim() || nome;
+  const pontuacao = parseInt(document.getElementById("novaPontuacao").value);
+  if (!nome || isNaN(pontuacao)) { alert("Preencha o nome e a pontuação!"); return; }
+  let alunos = JSON.parse(localStorage.getItem("alunos"));
+  const existente = alunos.find(a => a.nome.toLowerCase() === nome.toLowerCase());
+  if (existente) { existente.pontuacao = pontuacao; existente.senha = senha; alert("Aluno atualizado!"); }
+  else { alunos.push({ nome, senha, pontuacao }); alert("Aluno cadastrado!"); }
+  localStorage.setItem("alunos", JSON.stringify(alunos));
+  atualizarTabela();
+  document.getElementById("novoNome").value = "";
+  document.getElementById("novaSenha").value = "";
+  document.getElementById("novaPontuacao").value = "";
+}
 
-      if (tipo === "professor") {
-        if (usuario === professor.usuario && senha === professor.senha) {
-          mostrarPainelProfessor();
-        } else {
-          alert("Professor: usuário ou senha incorretos!");
-        }
-      } else {
-        const alunos = JSON.parse(localStorage.getItem("alunos"));
-        const aluno = alunos.find(a => a.nome.toLowerCase() === usuario.toLowerCase() && a.senha === senha);
-        const alunoSenhaIgualNome = alunos.find(a => a.nome.toLowerCase() === usuario.toLowerCase() && senha.toLowerCase() === a.nome.toLowerCase());
+function atualizarTabela() {
+  const alunos = JSON.parse(localStorage.getItem("alunos"));
+  const corpo = document.getElementById("tabelaAlunos");
+  corpo.innerHTML = "";
+  alunos.forEach(a => {
+    const linha = document.createElement("tr");
+    linha.innerHTML = `<td><input type="checkbox" class="selecionado" data-nome="${a.nome}"></td>
+                       <td>${a.nome}</td><td>${a.pontuacao}</td>
+                       <td><button onclick="editarAluno('${a.nome}')">Editar</button></td>`;
+    corpo.appendChild(linha);
+  });
+}
 
-        if (aluno || alunoSenhaIgualNome) {
-          alunoLogado = aluno || alunoSenhaIgualNome;
-          mostrarPainelAluno(alunoLogado);
-        } else {
-          alert("Aluno: usuário ou senha incorretos!");
-        }
-      }
-    }
+function selecionarTodos(cb) {
+  document.querySelectorAll(".selecionado").forEach(ch => ch.checked = cb.checked);
+}
 
-    // ================= PROFESSOR =================
-    function mostrarPainelProfessor() {
-      document.getElementById("telaLogin").classList.add("hidden");
-      document.getElementById("painelProfessor").classList.remove("hidden");
-      atualizarTabela();
-    }
+function apagarSelecionados() {
+  const selecionados = document.querySelectorAll(".selecionado:checked");
+  if (selecionados.length === 0) return alert("Selecione pelo menos um aluno!");
+  if (!confirm("Deseja apagar os alunos selecionados?")) return;
+  let alunos = JSON.parse(localStorage.getItem("alunos"));
+  selecionados.forEach(cb => { alunos = alunos.filter(a => a.nome !== cb.dataset.nome); });
+  localStorage.setItem("alunos", JSON.stringify(alunos));
+  atualizarTabela();
+  alert("Alunos selecionados apagados.");
+}
 
-    function cadastrarOuAtualizarAluno() {
-      const nome = document.getElementById("novoNome").value.trim();
-      const senha = document.getElementById("novaSenha").value.trim() || nome;
-      const pontuacao = parseInt(document.getElementById("novaPontuacao").value);
+/* NOVO BOTÃO APAGAR TODOS */
+function apagarTodos() {
+  const alunos = JSON.parse(localStorage.getItem("alunos"));
+  if (!alunos || alunos.length === 0) return alert("Não há alunos para apagar.");
+  if (!confirm("Tem certeza que deseja apagar TODOS os alunos? Esta ação é irreversível.")) return;
+  localStorage.setItem("alunos", JSON.stringify([]));
+  atualizarTabela();
+  alert("Todos os alunos foram apagados.");
+}
 
-      if (!nome || isNaN(pontuacao)) {
-        alert("Preencha o nome e a pontuação!");
-        return;
-      }
+function editarAluno(nome) {
+  const alunos = JSON.parse(localStorage.getItem("alunos"));
+  const aluno = alunos.find(a => a.nome === nome);
+  document.getElementById("novoNome").value = aluno.nome;
+  document.getElementById("novaSenha").value = aluno.senha;
+  document.getElementById("novaPontuacao").value = aluno.pontuacao;
+}
 
-      const alunos = JSON.parse(localStorage.getItem("alunos"));
-      const existente = alunos.find(a => a.nome.toLowerCase() === nome.toLowerCase());
+function mostrarPainelAluno(aluno) {
+  document.getElementById("telaLogin").classList.add("hidden");
+  document.getElementById("painelAluno").classList.remove("hidden");
+  document.getElementById("alunoNome").textContent = aluno.nome;
+  document.getElementById("alunoPontuacao").textContent = aluno.pontuacao;
+}
 
-      if (existente) {
-        existente.pontuacao = pontuacao;
-        existente.senha = senha;
-        alert("Aluno atualizado com sucesso!");
-      } else {
-        alunos.push({ nome, senha, pontuacao });
-        alert("Aluno cadastrado com sucesso!");
-      }
+function alterarSenhaAluno() {
+  const senhaAtual = document.getElementById("senhaAtual").value.trim();
+  const novaSenha = document.getElementById("novaSenhaAluno").value.trim();
+  const confirma = document.getElementById("confirmaSenhaAluno").value.trim();
+  if (!senhaAtual || !novaSenha || !confirma) return alert("Preencha todos os campos!");
+  if (novaSenha !== confirma) return alert("As senhas não coincidem!");
+  const alunos = JSON.parse(localStorage.getItem("alunos"));
+  const aluno = alunos.find(a => a.nome === alunoLogado.nome);
+  if (senhaAtual !== aluno.senha && senhaAtual.toLowerCase() !== aluno.nome.toLowerCase()) return alert("Senha atual incorreta!");
+  aluno.senha = novaSenha;
+  localStorage.setItem("alunos", JSON.stringify(alunos));
+  alert("Senha alterada!");
+}
 
-      localStorage.setItem("alunos", JSON.stringify(alunos));
-      atualizarTabela();
-      document.getElementById("novoNome").value = "";
-      document.getElementById("novaSenha").value = "";
-      document.getElementById("novaPontuacao").value = "";
-    }
+function importarListaAlunos() {
+  const file = document.getElementById("csvFile").files[0];
+  if (!file) return alert("Selecione um arquivo CSV primeiro!");
+  const reader = new FileReader();
+  reader.onload = e => {
+    const linhas = e.target.result.split(/\r?\n/);
+    let alunos = JSON.parse(localStorage.getItem("alunos"));
+    linhas.forEach((linha, i) => {
+      if (linha.trim() === "" || i === 0) return;
+      const nome = linha.split(/;|,/)[0].trim();
+      if (nome && !alunos.find(a => a.nome.toLowerCase() === nome.toLowerCase()))
+        alunos.push({ nome, senha: nome, pontuacao: 0 });
+    });
+    localStorage.setItem("alunos", JSON.stringify(alunos));
+    atualizarTabela();
+    alert("Lista importada!");
+  };
+  reader.readAsText(file);
+}
 
-    function apagarAluno(nome) {
-      if (confirm(`Deseja realmente apagar o aluno "${nome}"?`)) {
-        let alunos = JSON.parse(localStorage.getItem("alunos"));
-        alunos = alunos.filter(a => a.nome !== nome);
-        localStorage.setItem("alunos", JSON.stringify(alunos));
-        atualizarTabela();
-      }
-    }
-
-    function atualizarTabela() {
-      const alunos = JSON.parse(localStorage.getItem("alunos"));
-      const corpo = document.getElementById("tabelaAlunos");
-      corpo.innerHTML = "";
-      alunos.forEach(a => {
-        const linha = document.createElement("tr");
-        linha.innerHTML = `
-          <td>${a.nome}</td>
-          <td>${a.pontuacao}</td>
-          <td>
-            <button onclick="editarAluno('${a.nome}')">Editar</button>
-            <button onclick="apagarAluno('${a.nome}')">Apagar</button>
-          </td>`;
-        corpo.appendChild(linha);
-      });
-    }
-
-    function editarAluno(nome) {
-      const alunos = JSON.parse(localStorage.getItem("alunos"));
-      const aluno = alunos.find(a => a.nome === nome);
-      document.getElementById("novoNome").value = aluno.nome;
-      document.getElementById("novaSenha").value = aluno.senha;
-      document.getElementById("novaPontuacao").value = aluno.pontuacao;
-    }
-
-    // ================= ALUNO =================
-    function mostrarPainelAluno(aluno) {
-      document.getElementById("telaLogin").classList.add("hidden");
-      document.getElementById("painelAluno").classList.remove("hidden");
-      document.getElementById("alunoNome").textContent = aluno.nome;
-      document.getElementById("alunoPontuacao").textContent = aluno.pontuacao;
-    }
-
-    function alterarSenhaAluno() {
-      const senhaAtual = document.getElementById("senhaAtual").value.trim();
-      const novaSenha = document.getElementById("novaSenhaAluno").value.trim();
-      const confirma = document.getElementById("confirmaSenhaAluno").value.trim();
-
-      if (!senhaAtual || !novaSenha || !confirma) {
-        alert("Preencha todos os campos!");
-        return;
-      }
-
-      if (novaSenha !== confirma) {
-        alert("As senhas não coincidem!");
-        return;
-      }
-
-      const alunos = JSON.parse(localStorage.getItem("alunos"));
-      const aluno = alunos.find(a => a.nome === alunoLogado.nome);
-
-      if (senhaAtual !== aluno.senha && senhaAtual.toLowerCase() !== aluno.nome.toLowerCase()) {
-        alert("Senha atual incorreta!");
-        return;
-      }
-
-      aluno.senha = novaSenha;
-      localStorage.setItem("alunos", JSON.stringify(alunos));
-      alert("Senha alterada com sucesso!");
-      document.getElementById("senhaAtual").value = "";
-      document.getElementById("novaSenhaAluno").value = "";
-      document.getElementById("confirmaSenhaAluno").value = "";
-    }
-
-    // ================= IMPORTAR CSV =================
-    function importarCSV() {
-      const fileInput = document.getElementById("csvFile");
-      const file = fileInput.files[0];
-      if (!file) {
-        alert("Selecione um arquivo CSV primeiro!");
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const text = e.target.result;
-        const linhas = text.split(/\r?\n/);
-        let alunos = JSON.parse(localStorage.getItem("alunos"));
-
-        linhas.forEach((linha, index) => {
-          if (linha.trim() === "" || index === 0) return; // pular cabeçalho
-          const partes = linha.split(",");
-          const nome = partes[0].trim();
-          const senha = partes[1]?.trim() || nome;
-          const pontuacao = parseInt(partes[2]?.trim()) || 0;
-
-          const existente = alunos.find(a => a.nome.toLowerCase() === nome.toLowerCase());
-          if (existente) {
-            existente.senha = senha;
-            existente.pontuacao = pontuacao;
-          } else {
-            alunos.push({ nome, senha, pontuacao });
-          }
-        });
-
-        localStorage.setItem("alunos", JSON.stringify(alunos));
-        atualizarTabela();
-        alert("Importação concluída com sucesso!");
-        fileInput.value = "";
-      };
-      reader.readAsText(file);
-    }
-
-    // ================= SAIR =================
-    function logout() {
-      document.getElementById("telaLogin").classList.remove("hidden");
-      document.getElementById("painelProfessor").classList.add("hidden");
-      document.getElementById("painelAluno").classList.add("hidden");
-      document.getElementById("usuario").value = "";
-      document.getElementById("senha").value = "";
-      alunoLogado = null;
-    }
-  </script>
+function logout() {
+  document.getElementById("telaLogin").classList.remove("hidden");
+  document.getElementById("painelProfessor").classList.add("hidden");
+  document.getElementById("painelAluno").classList.add("hidden");
+}
+</script>
 </body>
 </html>
